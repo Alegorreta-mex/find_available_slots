@@ -11,9 +11,9 @@ def get_timelapse_from_times(start: time, end: time) -> timedelta:
     we need to create this auxiliary function because you cannot subtract two datetime.time objects directly and I think
     that is better that transforming the time objects to datetime objects and then subtract them, beacuse you will need
     to add dates and it will be more complicated.
-    :param start:
-    :param end:
-    :return:
+    :param start: datetime.time object with the start time
+    :param end: datetime.time object with the end time
+    :return: timedelta object with the timelapse between the two times
     """
     timelapse = timedelta(
         hours=end.hour - start.hour,
@@ -35,7 +35,13 @@ def find_available_slots(
     """
 
     available_slots = []
-    # First step is to organize the schedule from the earliest to the latest, in this way we can iterate through the
+    # Check if the meeting duration is greater than the office hours
+    if get_timelapse_from_times(OFFICE_HOURS[0], OFFICE_HOURS[1]) < meeting_duration:
+        return available_slots
+    # The considerations not mentionned that the mettings on the schudule are sorted, so we need to sort them.
+    # If we know that the previous steps solve this problem we can skip this step
+    schedule = [(second, first) if first > second else (first, second) for first, second in schedule]
+    # Second step is to organize the schedule from the earliest to the latest, in this way we can iterate through the
     # schedule in a more efficient way
     schedule.sort(key=lambda x: x[0])
     # Now we need to iterate through the schedule to find the available slots
